@@ -1,0 +1,6 @@
+{
+    "port": 5000,
+    "mongoURI": "mongodb://localhost:27017/mcq_test_platform",
+    "jwtSecret": "your_secret_key"
+  }
+  
