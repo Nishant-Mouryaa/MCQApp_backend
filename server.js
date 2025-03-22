@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const config = require('config'); // For managing configuration (e.g., port, MongoDB URI)
 const testsRoutes = require('./routes/tests');
@@ -7,7 +8,7 @@ const notesRoutes = require('./routes/notes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
-
+app.use(cors());
 // Middleware for parsing JSON requests
 app.use(express.json());
 
