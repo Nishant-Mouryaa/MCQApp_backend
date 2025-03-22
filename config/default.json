@@ -1,6 +1,6 @@
 {
     "port": 5000,
-    "mongoURI": "mongodb://localhost:27017/mcq_test_platform",
+    "mongoURI": "mongodb+srv://nishantmourya2005:8VbzXSNsYnMJz50h@cluster0.tqnvc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
     "jwtSecret": "your_secret_key"
   }
   
