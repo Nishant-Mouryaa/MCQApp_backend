@@ -44,12 +44,18 @@ exports.deleteTest = async (req, res, next) => {
 };
 
 // Optional: GET /api/tests/:id/questions
+// controllers/testsController.js
 exports.getTestQuestions = async (req, res, next) => {
   try {
-    const test = await Test.findById(req.params.id);
+    const testId = req.params.id;
+    if (!testId) {
+      return res.status(400).json({ message: 'Test ID is required' });
+    }
+    const test = await Test.findById(testId);
     if (!test) return res.status(404).json({ message: 'Test not found' });
     res.json(test.questions);
   } catch (err) {
     next(err);
   }
 };
+

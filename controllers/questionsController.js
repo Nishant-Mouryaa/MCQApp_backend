@@ -7,6 +7,7 @@ exports.getQuestions = async (req, res, next) => {
     if (!test) return res.status(404).json({ message: 'Test not found' });
     res.json(test.questions);
   } catch (err) {
+    console.error('Error in getQuestions:', err);
     next(err);
   }
 };
@@ -19,13 +20,14 @@ exports.createQuestion = async (req, res, next) => {
     if (!test) return res.status(404).json({ message: 'Test not found' });
 
     // Create new question from request body
-    const newQuestion = req.body; // { questionText, options, correctAnswer, ... }
+    const newQuestion = req.body; // Expected fields: questionText, options, correctAnswer, etc.
     test.questions.push(newQuestion);
     await test.save();
     
     // Return the newly added question (it's the last one in the array)
     res.status(201).json(test.questions[test.questions.length - 1]);
   } catch (err) {
+    console.error('Error in createQuestion:', err);
     next(err);
   }
 };
@@ -46,6 +48,7 @@ exports.updateQuestion = async (req, res, next) => {
     
     res.json(question);
   } catch (err) {
+    console.error('Error in updateQuestion:', err);
     next(err);
   }
 };
@@ -64,6 +67,7 @@ exports.deleteQuestion = async (req, res, next) => {
     
     res.json({ message: 'Question deleted successfully' });
   } catch (err) {
+    console.error('Error in deleteQuestion:', err);
     next(err);
   }
 };
