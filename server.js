@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB using Mongoose
-const dbURI = config.get('mongoURI') || 'mongodb+srv://nishantmourya2005:8VbzXSNsYnMJz50h@cluster0.tqnvc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const dbURI = config.get('mongoURI') || 'mongodb://localhost:27017/mcq_test_platform';
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
