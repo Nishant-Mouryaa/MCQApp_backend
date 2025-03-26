@@ -4,6 +4,9 @@ const testsController = require('../controllers/testsController');
 const validateRequest = require('../middleware/validateRequest');
 // Optionally: const auth = require('../middleware/auth');
 
+// GET /api/tests/:testId/questions
+router.get('/:testId/questions', testsController.getTestQuestions);
+
 // GET /api/tests - Retrieve list of tests
 router.get('/', testsController.getAllTests);
 
