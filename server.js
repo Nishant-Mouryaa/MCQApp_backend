@@ -6,6 +6,7 @@ const testsRoutes = require('./routes/tests');
 const textbooksRoutes = require('./routes/textbooks');
 const notesRoutes = require('./routes/notes');
 const errorHandler = require('./middleware/errorHandler');
+const questionsRoutes = require('./routes/questions');
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
 app.use('/api/tests', testsRoutes);
 app.use('/api/textbooks', textbooksRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/questions', questionsRoutes);
 
 // Error handling middleware (should be the last middleware)
 app.use(errorHandler);

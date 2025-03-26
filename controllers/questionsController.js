@@ -19,12 +19,13 @@ exports.createQuestion = async (req, res, next) => {
     const test = await Test.findById(testId);
     if (!test) return res.status(404).json({ message: 'Test not found' });
 
-    // Create new question from request body
-    const newQuestion = req.body; // Expected fields: questionText, options, correctAnswer, etc.
+    // Create new question from request body.
+    // Expected fields in req.body: questionText, options (array), correctAnswer, etc.
+    const newQuestion = req.body;
     test.questions.push(newQuestion);
     await test.save();
     
-    // Return the newly added question (it's the last one in the array)
+    // Return the newly added question (the last one in the array)
     res.status(201).json(test.questions[test.questions.length - 1]);
   } catch (err) {
     console.error('Error in createQuestion:', err);
@@ -40,9 +41,8 @@ exports.updateQuestion = async (req, res, next) => {
     const test = await Test.findOne({ 'questions._id': id });
     if (!test) return res.status(404).json({ message: 'Question not found' });
     
-    // Get the question subdocument
+    // Get the question subdocument and update its fields from req.body
     const question = test.questions.id(id);
-    // Update its fields from req.body
     question.set(req.body);
     await test.save();
     
@@ -61,7 +61,7 @@ exports.deleteQuestion = async (req, res, next) => {
     const test = await Test.findOne({ 'questions._id': id });
     if (!test) return res.status(404).json({ message: 'Question not found' });
     
-    // Remove the question subdocument
+    // Remove the question subdocument and save the test
     test.questions.id(id).remove();
     await test.save();
     
