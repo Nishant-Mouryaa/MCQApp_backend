@@ -1,33 +1,50 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
-const config = require('config'); // For managing configuration (e.g., port, MongoDB URI)
-const testsRoutes = require('./routes/tests');
-const textbooksRoutes = require('./routes/textbooks');
-const notesRoutes = require('./routes/notes');
-const errorHandler = require('./middleware/errorHandler');
-const questionsRoutes = require('./routes/questions');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const authRoutes = require('./routes/authRoutes');
+const testRoutes = require('./routes/testRoutes');
+const textbookRoutes = require('./routes/textbookRoutes');
+const noteRoutes = require('./routes/noteRoutes');
+const errorHandler = require('./utils/errorHandler');
+const { verifyToken } = require('./middleware/auth');
 
 const app = express();
-app.use(cors());
-// Middleware for parsing JSON requests
+
+// Database connection
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
+
+// Middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Connect to MongoDB using Mongoose
-const dbURI = config.get('mongoURI') || 'mongodb://localhost:27017/mcq_test_platform';
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
 
-// Define API routes
-app.use('/api/tests', testsRoutes);
-app.use('/api/textbooks', textbooksRoutes);
-app.use('/api/notes', notesRoutes);
-app.use('/api/questions', questionsRoutes);
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/tests', verifyToken, testRoutes);
+app.use('/api/textbooks', verifyToken, textbookRoutes);
+app.use('/api/notes', verifyToken, noteRoutes);
 
-// Error handling middleware (should be the last middleware)
+// Error handling
 app.use(errorHandler);
 
-// Start the server on a configurable port
-const PORT = process.env.PORT || config.get('port') || 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

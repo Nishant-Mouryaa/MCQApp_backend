@@ -1,44 +1,89 @@
 const Note = require('../models/Note');
 
-// GET /api/notes
-exports.getAllNotes = async (req, res, next) => {
+const getAllNotes = async (req, res, next) => {
   try {
-    const notes = await Note.find();
+    const { board, class: classLevel, subject } = req.query;
+    const filter = {};
+    
+    if (board) filter.board = board;
+    if (classLevel) filter.class = classLevel;
+    if (subject) filter.subject = subject;
+    
+    const notes = await Note.find(filter).sort({ createdAt: -1 });
     res.json(notes);
   } catch (err) {
     next(err);
   }
 };
 
-// POST /api/notes
-exports.createNote = async (req, res, next) => {
+const createNote = async (req, res, next) => {
   try {
-    const newNote = new Note(req.body);
-    const savedNote = await newNote.save();
-    res.status(201).json(savedNote);
+    const { title, content, board, class: classLevel, subject } = req.body;
+    
+    const note = new Note({
+      title,
+      content,
+      board,
+      class: classLevel,
+      subject,
+      createdBy: req.user.id
+    });
+    
+    await note.save();
+    res.status(201).json(note);
   } catch (err) {
     next(err);
   }
 };
 
-// PUT /api/notes/:id
-exports.updateNote = async (req, res, next) => {
+const getNote = async (req, res, next) => {
   try {
-    const updatedNote = await Note.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!updatedNote) return res.status(404).json({ message: 'Note not found' });
-    res.json(updatedNote);
+    const note = await Note.findById(req.params.id);
+    
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    
+    res.json(note);
   } catch (err) {
     next(err);
   }
 };
 
-// DELETE /api/notes/:id
-exports.deleteNote = async (req, res, next) => {
+const updateNote = async (req, res, next) => {
   try {
-    const deletedNote = await Note.findByIdAndDelete(req.params.id);
-    if (!deletedNote) return res.status(404).json({ message: 'Note not found' });
+    const { title, content, board, class: classLevel, subject } = req.body;
+    
+    const note = await Note.findByIdAndUpdate(
+      req.params.id,
+      { title, content, board, class: classLevel, subject },
+      { new: true, runValidators: true }
+    );
+    
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    
+    res.json(note);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteNote = async (req, res, next) => {
+  try {
+    const note = await Note.findByIdAndDelete(req.params.id);
+    
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    
     res.json({ message: 'Note deleted successfully' });
   } catch (err) {
     next(err);
   }
+};
+
+module.exports = {
+  getAllNotes, createNote, getNote, updateNote, deleteNote
 };

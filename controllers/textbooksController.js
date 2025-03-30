@@ -1,44 +1,122 @@
 const Textbook = require('../models/Textbook');
+const fs = require('fs');
+const path = require('path');
 
-// GET /api/textbooks
-exports.getAllTextbooks = async (req, res, next) => {
+const getAllTextbooks = async (req, res, next) => {
   try {
-    const textbooks = await Textbook.find();
+    const { board, class: classLevel, subject } = req.query;
+    const filter = {};
+    
+    if (board) filter.board = board;
+    if (classLevel) filter.class = classLevel;
+    if (subject) filter.subject = subject;
+    
+    const textbooks = await Textbook.find(filter).sort({ createdAt: -1 });
     res.json(textbooks);
   } catch (err) {
     next(err);
   }
 };
 
-// POST /api/textbooks
-exports.createTextbook = async (req, res, next) => {
+const uploadTextbook = async (req, res, next) => {
   try {
-    const newTextbook = new Textbook(req.body);
-    const savedTextbook = await newTextbook.save();
-    res.status(201).json(savedTextbook);
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    
+    const { title, description, board, class: classLevel, subject } = req.body;
+    
+    const textbook = new Textbook({
+      title,
+      description,
+      board,
+      class: classLevel,
+      subject,
+      filePath: req.file.path,
+      fileName: req.file.originalname,
+      fileSize: req.file.size,
+      createdBy: req.user.id
+    });
+    
+    await textbook.save();
+    res.status(201).json(textbook);
   } catch (err) {
     next(err);
   }
 };
 
-// PUT /api/textbooks/:id
-exports.updateTextbook = async (req, res, next) => {
+const getTextbook = async (req, res, next) => {
   try {
-    const updatedTextbook = await Textbook.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!updatedTextbook) return res.status(404).json({ message: 'Textbook not found' });
-    res.json(updatedTextbook);
+    const textbook = await Textbook.findById(req.params.id);
+    
+    if (!textbook) {
+      return res.status(404).json({ message: 'Textbook not found' });
+    }
+    
+    res.json(textbook);
   } catch (err) {
     next(err);
   }
 };
 
-// DELETE /api/textbooks/:id
-exports.deleteTextbook = async (req, res, next) => {
+const updateTextbookMetadata = async (req, res, next) => {
   try {
-    const deletedTextbook = await Textbook.findByIdAndDelete(req.params.id);
-    if (!deletedTextbook) return res.status(404).json({ message: 'Textbook not found' });
+    const { title, description, board, class: classLevel, subject } = req.body;
+    
+    const textbook = await Textbook.findByIdAndUpdate(
+      req.params.id,
+      { title, description, board, class: classLevel, subject },
+      { new: true, runValidators: true }
+    );
+    
+    if (!textbook) {
+      return res.status(404).json({ message: 'Textbook not found' });
+    }
+    
+    res.json(textbook);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteTextbook = async (req, res, next) => {
+  try {
+    const textbook = await Textbook.findByIdAndDelete(req.params.id);
+    
+    if (!textbook) {
+      return res.status(404).json({ message: 'Textbook not found' });
+    }
+    
+    // Delete the file
+    fs.unlink(textbook.filePath, (err) => {
+      if (err) console.error('Error deleting file:', err);
+    });
+    
     res.json({ message: 'Textbook deleted successfully' });
   } catch (err) {
     next(err);
   }
+};
+
+const downloadTextbook = async (req, res, next) => {
+  try {
+    const textbook = await Textbook.findById(req.params.id);
+    
+    if (!textbook) {
+      return res.status(404).json({ message: 'Textbook not found' });
+    }
+    
+    if (!fs.existsSync(textbook.filePath)) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+    
+    res.download(textbook.filePath, textbook.fileName);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getAllTextbooks, uploadTextbook, getTextbook,
+  updateTextbookMetadata, deleteTextbook, downloadTextbook
 };
