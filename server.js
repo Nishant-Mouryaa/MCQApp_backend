@@ -26,6 +26,7 @@ app.use(express.json());
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 // app.use('/api/textbooks', textbookRoutes);
 // app.use('/api/notes', noteRoutes);
 
