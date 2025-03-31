@@ -16,4 +16,10 @@ router.put('/:id', authMiddleware, testsController.updateTest);
 // Delete a test (protected route)
 router.delete('/:id', authMiddleware, testsController.deleteTest);
 
+// Routes for managing questions
+router.post('/:id/questions', authMiddleware, testsController.addQuestion);
+router.put('/:id/questions/:questionId', authMiddleware, testsController.updateQuestion);
+router.delete('/:id/questions/:questionId', authMiddleware, testsController.deleteQuestion);
+
+
 module.exports = router;
