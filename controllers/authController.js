@@ -64,11 +64,14 @@ const authController = {
       console.log('Stored hash:', user.password);
       console.log('Input password:', password);
   
-      // Compare passwords
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
+    
+const isMatch = await bcrypt.compare(password, user.password);
+console.log('Password comparison:', {
+  inputPassword: `|${password}|`, // Shows whitespace
+  length: password.length,
+  hash: user.password,
+  isMatch
+});
   
       // Generate token
       const token = jwt.sign(
