@@ -49,41 +49,38 @@ const authController = {
     }
   },
 
-  // User login
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+      const cleanEmail = email.toLowerCase().trim();
+  
       // Find user
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email: cleanEmail });
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
-
-      // Check password
+  
+      // Debug: Log critical values
+      console.log('Stored hash:', user.password);
+      console.log('Input password:', password);
+  
+      // Compare passwords
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
-
-      // Generate JWT
+  
+      // Generate token
       const token = jwt.sign(
         { userId: user._id, role: user.role },
-        JWT_SECRET,
+        process.env.JWT_SECRET,
         { expiresIn: '1h' }
       );
-
-      res.json({ 
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        }
-      });
+  
+      res.json({ token, user });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Server error' });
     }
   },
 
