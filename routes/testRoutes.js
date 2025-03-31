@@ -1,17 +1,19 @@
 // routes/testRoutes.js
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
-const authMiddleware = require('../middleware/auth');
-const testController = require('../controllers/testsController');
+const testsController = require('../controllers/testsController');
+const authMiddleware = require('../middleware/auth'); // Adjust path if needed
 
-router.post('/',
-  authMiddleware,
-  [
-    body('title').notEmpty().withMessage('Title is required'),
-    body('questions').isArray().withMessage('Questions must be an array')
-  ],
-  testController.createTest
-);
+// Get all tests (protected route)
+router.get('/', authMiddleware, testsController.getAllTests);
+
+// Create a new test (protected route)
+router.post('/', authMiddleware, testsController.createTest);
+
+// Update a test (protected route)
+router.put('/:id', authMiddleware, testsController.updateTest);
+
+// Delete a test (protected route)
+router.delete('/:id', authMiddleware, testsController.deleteTest);
 
 module.exports = router;

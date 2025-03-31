@@ -1,6 +1,7 @@
+// controllers/testsController.js
 const Test = require('../models/Test');
 
-// GET /api/tests
+// GET /api/tests - Retrieve all tests
 exports.getAllTests = async (req, res, next) => {
   try {
     const tests = await Test.find({});
@@ -10,12 +11,8 @@ exports.getAllTests = async (req, res, next) => {
   }
 };
 
-// POST /api/tests
+// POST /api/tests - Create a new test
 exports.createTest = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
   try {
     const { title, description, questions } = req.body;
     const newTest = await Test.create({ title, description, questions });
@@ -25,13 +22,13 @@ exports.createTest = async (req, res, next) => {
   }
 };
 
-// PUT /api/tests/:id
+// PUT /api/tests/:id - Update an existing test
 exports.updateTest = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updatedTest = await Test.findByIdAndUpdate(
       id,
-      { ...req.body },
+      { ...req.body, updatedAt: Date.now() },
       { new: true, runValidators: true }
     );
     if (!updatedTest) {
@@ -43,7 +40,7 @@ exports.updateTest = async (req, res, next) => {
   }
 };
 
-// DELETE /api/tests/:id
+// DELETE /api/tests/:id - Delete a test
 exports.deleteTest = async (req, res, next) => {
   try {
     const { id } = req.params;

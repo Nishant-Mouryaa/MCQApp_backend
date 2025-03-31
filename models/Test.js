@@ -1,15 +1,16 @@
+// models/Test.js
 const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
   questionText: { type: String, required: true },
-  options: [{ type: String }],            // e.g., multiple-choice options
+  options: [{ type: String }],
   correctAnswer: { type: String, required: true }
 }, { _id: false });
 
 const testSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
-  questions: [questionSchema], // Embedded questions
+  questions: [questionSchema],
   createdAt: { type: Date, default: Date.now }
 });
 
