@@ -1,44 +1,16 @@
 const mongoose = require('mongoose');
 
+const questionSchema = new mongoose.Schema({
+  questionText: { type: String, required: true },
+  options: [{ type: String }],            // e.g., multiple-choice options
+  correctAnswer: { type: String, required: true }
+}, { _id: false });
+
 const testSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Please provide a test title'],
-    trim: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
-  duration: {
-    type: Number,
-    required: [true, 'Please provide test duration in minutes']
-  },
-  board: {
-    type: String,
-    required: [true, 'Please select a board']
-  },
-  class: {
-    type: String,
-    required: [true, 'Please select a class']
-  },
-  subject: {
-    type: String,
-    required: [true, 'Please select a subject']
-  },
-  questions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Question'
-  }],
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  title: { type: String, required: true },
+  description: { type: String },
+  questions: [questionSchema], // Embedded questions
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Test', testSchema);

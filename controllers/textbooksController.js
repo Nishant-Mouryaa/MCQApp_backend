@@ -1,122 +1,67 @@
 const Textbook = require('../models/Textbook');
-const fs = require('fs');
-const path = require('path');
 
-const getAllTextbooks = async (req, res, next) => {
+// POST /api/textbooks
+exports.createTextbook = async (req, res, next) => {
   try {
-    const { board, class: classLevel, subject } = req.query;
-    const filter = {};
+    // req.file contains Multer info (filename, path, etc.)
+    const { title, board, subject } = req.body;
     
-    if (board) filter.board = board;
-    if (classLevel) filter.class = classLevel;
-    if (subject) filter.subject = subject;
-    
-    const textbooks = await Textbook.find(filter).sort({ createdAt: -1 });
-    res.json(textbooks);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const uploadTextbook = async (req, res, next) => {
-  try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ message: 'PDF file is required' });
     }
-    
-    const { title, description, board, class: classLevel, subject } = req.body;
-    
-    const textbook = new Textbook({
+
+    const textbook = await Textbook.create({
       title,
-      description,
       board,
-      class: classLevel,
       subject,
-      filePath: req.file.path,
-      fileName: req.file.originalname,
-      fileSize: req.file.size,
-      createdBy: req.user.id
+      filePath: req.file.path
     });
-    
-    await textbook.save();
+
     res.status(201).json(textbook);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-const getTextbook = async (req, res, next) => {
+// GET /api/textbooks
+exports.getAllTextbooks = async (req, res, next) => {
   try {
-    const textbook = await Textbook.findById(req.params.id);
-    
-    if (!textbook) {
-      return res.status(404).json({ message: 'Textbook not found' });
-    }
-    
-    res.json(textbook);
-  } catch (err) {
-    next(err);
+    const textbooks = await Textbook.find({});
+    res.json(textbooks);
+  } catch (error) {
+    next(error);
   }
 };
 
-const updateTextbookMetadata = async (req, res, next) => {
+// PUT /api/textbooks/:id
+exports.updateTextbook = async (req, res, next) => {
   try {
-    const { title, description, board, class: classLevel, subject } = req.body;
-    
-    const textbook = await Textbook.findByIdAndUpdate(
-      req.params.id,
-      { title, description, board, class: classLevel, subject },
-      { new: true, runValidators: true }
+    const { id } = req.params;
+    const updated = await Textbook.findByIdAndUpdate(
+      id,
+      { ...req.body },
+      { new: true }
     );
-    
-    if (!textbook) {
+    if (!updated) {
       return res.status(404).json({ message: 'Textbook not found' });
     }
-    
-    res.json(textbook);
-  } catch (err) {
-    next(err);
+    res.json(updated);
+  } catch (error) {
+    next(error);
   }
 };
 
-const deleteTextbook = async (req, res, next) => {
+// DELETE /api/textbooks/:id
+exports.deleteTextbook = async (req, res, next) => {
   try {
-    const textbook = await Textbook.findByIdAndDelete(req.params.id);
-    
-    if (!textbook) {
+    const { id } = req.params;
+    const deleted = await Textbook.findByIdAndDelete(id);
+    if (!deleted) {
       return res.status(404).json({ message: 'Textbook not found' });
     }
-    
-    // Delete the file
-    fs.unlink(textbook.filePath, (err) => {
-      if (err) console.error('Error deleting file:', err);
-    });
-    
-    res.json({ message: 'Textbook deleted successfully' });
-  } catch (err) {
-    next(err);
+    // Optionally remove the file from the filesystem or storage
+    res.status(204).send();
+  } catch (error) {
+    next(error);
   }
-};
-
-const downloadTextbook = async (req, res, next) => {
-  try {
-    const textbook = await Textbook.findById(req.params.id);
-    
-    if (!textbook) {
-      return res.status(404).json({ message: 'Textbook not found' });
-    }
-    
-    if (!fs.existsSync(textbook.filePath)) {
-      return res.status(404).json({ message: 'File not found' });
-    }
-    
-    res.download(textbook.filePath, textbook.fileName);
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports = {
-  getAllTextbooks, uploadTextbook, getTextbook,
-  updateTextbookMetadata, deleteTextbook, downloadTextbook
 };

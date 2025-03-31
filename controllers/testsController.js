@@ -1,157 +1,58 @@
 const Test = require('../models/Test');
-const Question = require('../models/Question');
 
-const getAllTests = async (req, res, next) => {
+// GET /api/tests
+exports.getAllTests = async (req, res, next) => {
   try {
-    const tests = await Test.find()
-      .populate('questions')
-      .sort({ createdAt: -1 });
+    const tests = await Test.find({});
     res.json(tests);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-const createTest = async (req, res, next) => {
+// POST /api/tests
+exports.createTest = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
-    const { title, description, duration, board, class: classLevel, subject } = req.body;
-    
-    const test = new Test({
-      title,
-      description,
-      duration,
-      board,
-      class: classLevel,
-      subject,
-      createdBy: req.user.id
-    });
-    
-    await test.save();
-    res.status(201).json(test);
-  } catch (err) {
-    next(err);
+    const { title, description, questions } = req.body;
+    const newTest = await Test.create({ title, description, questions });
+    res.status(201).json(newTest);
+  } catch (error) {
+    next(error);
   }
 };
 
-const getTest = async (req, res, next) => {
+// PUT /api/tests/:id
+exports.updateTest = async (req, res, next) => {
   try {
-    const test = await Test.findById(req.params.id)
-      .populate('questions');
-      
-    if (!test) {
-      return res.status(404).json({ message: 'Test not found' });
-    }
-    
-    res.json(test);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const updateTest = async (req, res, next) => {
-  try {
-    const { title, description, duration, board, class: classLevel, subject } = req.body;
-    
-    const test = await Test.findByIdAndUpdate(
-      req.params.id,
-      { title, description, duration, board, class: classLevel, subject },
+    const { id } = req.params;
+    const updatedTest = await Test.findByIdAndUpdate(
+      id,
+      { ...req.body },
       { new: true, runValidators: true }
     );
-    
-    if (!test) {
+    if (!updatedTest) {
       return res.status(404).json({ message: 'Test not found' });
     }
-    
-    res.json(test);
-  } catch (err) {
-    next(err);
+    res.json(updatedTest);
+  } catch (error) {
+    next(error);
   }
 };
 
-const deleteTest = async (req, res, next) => {
+// DELETE /api/tests/:id
+exports.deleteTest = async (req, res, next) => {
   try {
-    const test = await Test.findByIdAndDelete(req.params.id);
-    
-    if (!test) {
+    const { id } = req.params;
+    const deletedTest = await Test.findByIdAndDelete(id);
+    if (!deletedTest) {
       return res.status(404).json({ message: 'Test not found' });
     }
-    
-    // Delete associated questions
-    await Question.deleteMany({ test: req.params.id });
-    
-    res.json({ message: 'Test deleted successfully' });
-  } catch (err) {
-    next(err);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
   }
-};
-
-const addQuestion = async (req, res, next) => {
-  try {
-    const { questionText, options, correctAnswer, marks } = req.body;
-    
-    const question = new Question({
-      questionText,
-      options,
-      correctAnswer,
-      marks,
-      test: req.params.id
-    });
-    
-    await question.save();
-    
-    // Add question to test
-    await Test.findByIdAndUpdate(
-      req.params.id,
-      { $push: { questions: question._id } }
-    );
-    
-    res.status(201).json(question);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const updateQuestion = async (req, res, next) => {
-  try {
-    const { questionText, options, correctAnswer, marks } = req.body;
-    
-    const question = await Question.findByIdAndUpdate(
-      req.params.qid,
-      { questionText, options, correctAnswer, marks },
-      { new: true, runValidators: true }
-    );
-    
-    if (!question) {
-      return res.status(404).json({ message: 'Question not found' });
-    }
-    
-    res.json(question);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const deleteQuestion = async (req, res, next) => {
-  try {
-    const question = await Question.findByIdAndDelete(req.params.qid);
-    
-    if (!question) {
-      return res.status(404).json({ message: 'Question not found' });
-    }
-    
-    // Remove question from test
-    await Test.findByIdAndUpdate(
-      req.params.id,
-      { $pull: { questions: req.params.qid } }
-    );
-    
-    res.json({ message: 'Question deleted successfully' });
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports = {
-  getAllTests, createTest, getTest, updateTest, deleteTest,
-  addQuestion, updateQuestion, deleteQuestion
 };
