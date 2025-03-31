@@ -9,6 +9,8 @@ const errorHandler = require('./middleware/errorHandler');
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const testRoutes = require('./routes/testRoutes');
+
+const dashboardRoutes = require('./routes/dashboardRoutes');
 // Add textbookRoutes, noteRoutes, etc. as needed
 
 const app = express();
