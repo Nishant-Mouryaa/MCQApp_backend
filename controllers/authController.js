@@ -1,83 +1,113 @@
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { generateTokens } = require('../utils/jwt');
+const { JWT_SECRET } = process.env;
 
-const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    
-    const { accessToken, refreshToken } = generateTokens(user._id);
-    
-    // Save refresh token to database
-    user.refreshToken = refreshToken;
-    await user.save();
-    
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-    
-    res.json({
-      accessToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
+const authController = {
+  // User registration (add this new method)
+  register: async (req, res) => {
+    try {
+      const { email, password, name } = req.body;
+      
+      // Check if user exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email already exists' });
       }
-    });
-  } catch (err) {
-    next(err);
-  }
-};
 
-const logout = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user.id);
-    user.refreshToken = null;
-    await user.save();
-    
-    res.clearCookie('refreshToken');
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create user
+      const user = new User({
+        email,
+        password: hashedPassword,
+        name,
+        role: 'admin' // or 'user' based on your needs
+      });
+
+      await user.save();
+
+      // Generate JWT
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      res.status(201).json({ 
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // User login
+  login: async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find user
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      // Check password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+
+      // Generate JWT
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      res.json({ 
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  logout: (req, res) => {
+    // Typically handled client-side by removing the token
     res.json({ message: 'Logged out successfully' });
-  } catch (err) {
-    next(err);
-  }
-};
+  },
 
-const refreshToken = async (req, res, next) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      return res.status(401).json({ message: 'No refresh token provided' });
+  refreshToken: (req, res) => {
+    // Implement token refresh logic here
+    res.json({ message: 'Token refreshed' });
+  },
+
+  getCurrentUser: async (req, res) => {
+    try {
+      const user = await User.findById(req.userId).select('-password');
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-    
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const user = await User.findById(decoded.id);
-    
-    if (!user || user.refreshToken !== refreshToken) {
-      return res.status(401).json({ message: 'Invalid refresh token' });
-    }
-    
-    const { accessToken } = generateTokens(user._id);
-    res.json({ accessToken });
-  } catch (err) {
-    next(err);
   }
 };
 
-const getCurrentUser = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password -refreshToken');
-    res.json(user);
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports = { login, logout, refreshToken, getCurrentUser };
+module.exports = authController;
