@@ -9,7 +9,8 @@ const errorHandler = require('./middleware/errorHandler');
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const testRoutes = require('./routes/testRoutes');
-
+const textbookRoutes = require('./routes/textbookRoutes');
+// const noteRoutes = require('./routes/noteRoutes'); // Uncomment if needed
 const dashboardRoutes = require('./routes/dashboardRoutes');
 // Add textbookRoutes, noteRoutes, etc. as needed
 
@@ -27,7 +28,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-// app.use('/api/textbooks', textbookRoutes);
+app.use('/api/textbooks', textbookRoutes);
 // app.use('/api/notes', noteRoutes);
 
 // Error Handling Middleware (must be after routes)
