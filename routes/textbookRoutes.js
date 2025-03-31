@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const textbookController = require('../controllers/textbookController');
-const authMiddleware = require('../middleware/authMiddleware');
+const textbookController = require('../controllers/textbooksController');
+const authMiddleware = require('../middleware/auth');
 
 // Configure Multer storage and file filter
 const storage = multer.diskStorage({
