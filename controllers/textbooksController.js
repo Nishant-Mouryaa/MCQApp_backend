@@ -1,9 +1,9 @@
 const Textbook = require('../models/Textbook');
 
-// POST /api/textbooks
+// POST /api/textbooks - Create a new textbook
 exports.createTextbook = async (req, res, next) => {
   try {
-    // req.file contains Multer info (filename, path, etc.)
+    // Multer will place file info in req.file
     const { title, board, subject } = req.body;
     
     if (!req.file) {
@@ -23,7 +23,7 @@ exports.createTextbook = async (req, res, next) => {
   }
 };
 
-// GET /api/textbooks
+// GET /api/textbooks - Retrieve all textbooks
 exports.getAllTextbooks = async (req, res, next) => {
   try {
     const textbooks = await Textbook.find({});
@@ -33,7 +33,7 @@ exports.getAllTextbooks = async (req, res, next) => {
   }
 };
 
-// PUT /api/textbooks/:id
+// PUT /api/textbooks/:id - Update textbook metadata
 exports.updateTextbook = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -51,7 +51,7 @@ exports.updateTextbook = async (req, res, next) => {
   }
 };
 
-// DELETE /api/textbooks/:id
+// DELETE /api/textbooks/:id - Delete a textbook
 exports.deleteTextbook = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -59,7 +59,7 @@ exports.deleteTextbook = async (req, res, next) => {
     if (!deleted) {
       return res.status(404).json({ message: 'Textbook not found' });
     }
-    // Optionally remove the file from the filesystem or storage
+    // Optionally: remove the file from the filesystem
     res.status(204).send();
   } catch (error) {
     next(error);

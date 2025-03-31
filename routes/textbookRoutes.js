@@ -5,13 +5,12 @@ const path = require('path');
 const textbookController = require('../controllers/textbookController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Configure Multer
+// Configure Multer storage and file filter
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Or some configurable path
+    cb(null, 'uploads/'); // Ensure this folder exists or is created dynamically
   },
   filename: function (req, file, cb) {
-    // e.g., textbook-<timestamp>.pdf
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
     cb(null, 'textbook-' + uniqueSuffix + ext);
@@ -19,7 +18,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Accept only PDFs
+  // Accept only PDF files
   if (file.mimetype === 'application/pdf') {
     cb(null, true);
   } else {
@@ -27,21 +26,19 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ 
-  storage: storage,
-  fileFilter
-});
+const upload = multer({ storage, fileFilter });
 
-// POST /api/textbooks - upload a new textbook
+// Routes
+// Create textbook (upload new PDF)
 router.post('/', authMiddleware, upload.single('pdf'), textbookController.createTextbook);
 
-// PUT /api/textbooks/:id - update
+// Update textbook metadata (without file upload)
 router.put('/:id', authMiddleware, textbookController.updateTextbook);
 
-// GET /api/textbooks
+// Get all textbooks
 router.get('/', textbookController.getAllTextbooks);
 
-// DELETE /api/textbooks/:id
+// Delete textbook
 router.delete('/:id', authMiddleware, textbookController.deleteTextbook);
 
 module.exports = router;
