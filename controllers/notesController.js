@@ -20,13 +20,14 @@ const createNote = async (req, res, next) => {
   try {
     const { title, content, board, class: classLevel, subject } = req.body;
     
+    // Use req.user.userId if that's how your middleware sets it
     const note = new Note({
       title,
       content,
       board,
       class: classLevel,
       subject,
-      createdBy: req.user.id
+      createdBy: req.user.userId
     });
     
     await note.save();

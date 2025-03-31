@@ -17,7 +17,8 @@ module.exports = (req, res, next) => {
     if (err) {
       return res.status(401).json({ message: 'Failed to authenticate token' });
     }
-    req.user = decoded; // { userId, role }
+    // Ensure the payload contains userId
+    req.user = { userId: decoded.userId, role: decoded.role };
     next();
   });
 };
