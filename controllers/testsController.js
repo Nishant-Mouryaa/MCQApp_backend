@@ -2,12 +2,33 @@
 const Test = require('../models/Test');
 
 // GET /api/tests - Retrieve all tests
-exports.getAllTests = async (req, res, next) => {
+exports.getAllTests = async (req, res) => {
   try {
-    const tests = await Test.find({});
-    res.json(tests);
+    console.log('User ID making request:', req.user.userId);
+    console.log('Found tests:', tests.length);
+    const tests = await Test.find({})
+    
+      .select('title description questions createdAt')
+      .lean();
+    
+    if (!tests.length) {
+      return res.status(404).json({ message: 'No tests found' });
+    }
+
+    const formattedTests = tests.map(test => ({
+      ...test,
+      questionsCount: test.questions.length,
+      id: test._id.toString()
+    }));
+
+    res.json(formattedTests);
   } catch (error) {
-    next(error);
+    console.error('Error details:', {
+      error: error.message,
+      stack: error.stack,
+      query: Test.find({}).toString()
+    });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
