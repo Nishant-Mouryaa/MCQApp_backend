@@ -12,6 +12,7 @@ const testRoutes = require('./routes/testRoutes');
 const textbookRoutes = require('./routes/textbookRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const protectedRoutes = require('./routes/protected');
 
 
 const fs = require('fs');
@@ -40,6 +41,7 @@ app.use('/api/tests', testRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/textbooks', textbookRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/protected', protectedRoutes); // Protected routes for file delivery
 
 // Error Handling Middleware (must be after routes)
 app.use(errorHandler);
