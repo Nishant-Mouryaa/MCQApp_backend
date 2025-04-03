@@ -2,25 +2,39 @@ const jwt = require('jsonwebtoken');
 const { secret } = require('../config/jwtConfig');
 
 module.exports = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.headers.authorization;
   
   if (!authHeader) {
     return res.status(401).json({ message: 'No token provided' });
   }
 
-  const token = authHeader.split(' ')[1]; // Expect "Bearer <token>"
-  if (!token) {
+  // Verify header format
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
     return res.status(401).json({ message: 'Invalid token format' });
   }
 
+  const token = parts[1];
+  
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ message: 'Failed to authenticate token' });
+      console.error('JWT Verify Error:', err.message);
+      return res.status(401).json({ 
+        message: 'Invalid token',
+        error: err.message 
+      });
     }
-    // Ensure the payload contains userId
-    req.user = { userId: decoded.userId, role: decoded.role };
+
+    // Verify payload structure
+    if (!decoded?.userId) {
+      return res.status(401).json({ message: 'Invalid token payload' });
+    }
+
+    req.user = {
+      userId: decoded.userId,
+      role: decoded.role || 'user'
+    };
+    
     next();
   });
 };
-
-
