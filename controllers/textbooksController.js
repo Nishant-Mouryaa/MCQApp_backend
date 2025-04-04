@@ -14,7 +14,7 @@ exports.createTextbook = async (req, res, next) => {
       title,
       board,
       subject,
-      filePath: req.file.path
+      filePath: req.file.filename, // Store the filename in the database
     });
 
     res.status(201).json(textbook);

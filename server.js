@@ -20,8 +20,16 @@ const path = require('path');
 
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-  console.log('Uploads directory created.');
+  fs.mkdirSync(uploadsDir, { recursive: true }); // Add recursive flag
+  console.log('Uploads directory created at:', uploadsDir); // Debug path
+}
+
+if (process.env.RENDER) {
+  const renderUploadsDir = '/opt/render/project/uploads';
+  if (!fs.existsSync(renderUploadsDir)) {
+    fs.mkdirSync(renderUploadsDir, { recursive: true });
+    console.log('Created Render.com uploads directory');
+  }
 }
 
 

@@ -8,7 +8,7 @@ router.get('/:filename', (req, res) => {
   try {
     // Security: Prevent directory traversal
     const safeFilename = path.normalize(req.params.filename).replace(/^(\.\.(\/|\\|$))+/g, '');
-    const filePath = path.join(__dirname, '../../uploads', safeFilename);
+    const filePath = path.join(__dirname, '../uploads', safeFilename);
 
     // Verify file exists
     if (!fs.existsSync(filePath)) {
