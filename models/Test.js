@@ -27,7 +27,7 @@ const questionSchema = new mongoose.Schema({
 const testSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
-  questions: [questionSchema],
+  questions: {type: [questionSchema], default: []},
   createdAt: { type: Date, default: Date.now }
 });
 

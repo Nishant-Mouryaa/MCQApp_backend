@@ -36,13 +36,21 @@ exports.getAllTests = async (req, res) => {
 };
 
 // POST /api/tests - Create a new test
-exports.createTest = async (req, res, next) => {
+exports.createTest = async (req, res) => {
   try {
-    const { title, description, questions } = req.body;
-    const newTest = await Test.create({ title, description, questions });
-    res.status(201).json(newTest);
+    const { title, description } = req.body;
+    
+    // Create test with empty questions array
+    const test = new Test({
+      title,
+      description,
+      questions: [] // Explicitly set empty array
+    });
+
+    await test.save();
+    res.status(201).json(test);
   } catch (error) {
-    next(error);
+    res.status(400).json({ error: error.message });
   }
 };
 
