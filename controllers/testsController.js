@@ -2,14 +2,17 @@
 const Test = require('../models/Test');
 
 // GET /api/tests - Retrieve all tests
+// GET /api/tests - Retrieve all tests
 exports.getAllTests = async (req, res) => {
   try {
     console.log('User ID making request:', req.user.userId);
-    console.log('Found tests:', tests.length);
-    const tests = await Test.find({})
     
+    // Move the tests query to the top
+    const tests = await Test.find({})
       .select('title description questions createdAt')
       .lean();
+    
+    console.log('Found tests:', tests.length); // Now this will work
     
     if (!tests.length) {
       return res.status(404).json({ message: 'No tests found' });
