@@ -16,6 +16,9 @@ router.put('/:id', authMiddleware, testsController.updateTest);
 // Delete a test (protected route)
 router.delete('/:id', authMiddleware, testsController.deleteTest);
 
+// Get a test by ID (protected route)
+router.post('/test-results', authMiddleware, testsController.submitTestResults);
+
 // Routes for managing questions
 router.post('/:id/questions', authMiddleware, testsController.addQuestion);
 router.put('/:id/questions/:questionId', authMiddleware, testsController.updateQuestion);

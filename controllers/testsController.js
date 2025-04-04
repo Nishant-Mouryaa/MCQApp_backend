@@ -139,3 +139,23 @@ exports.deleteQuestion = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.submitTestResults = async (req, res) => {
+  try {
+    const { testId, score, totalQuestions, answers } = req.body;
+    
+    const testResult = new TestResult({
+      user: req.user.userId,
+      test: testId,
+      score,
+      totalQuestions,
+      answers
+    });
+
+    await testResult.save();
+    
+    res.status(201).json(testResult);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
