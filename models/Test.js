@@ -27,9 +27,9 @@ const questionSchema = new mongoose.Schema({
 const testSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
-  questions: {type: [questionSchema], default: []},
-  createdAt: { type: Date, default: Date.now }
-});
+  questions: { type: [questionSchema], default: [] }
+}, { timestamps: true });
+
 
 const testResultSchema = new mongoose.Schema({
   user: {
@@ -61,6 +61,9 @@ const testResultSchema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Test', testSchema);
-module.exports = mongoose.model('TestResult', testResultSchema);
-module.exports = mongoose.model('Question', questionSchema);
+module.exports = {
+  Test: mongoose.model('Test', testSchema),
+  TestResult: mongoose.model('TestResult', testResultSchema),
+  Question: mongoose.model('Question', questionSchema)
+};
+
