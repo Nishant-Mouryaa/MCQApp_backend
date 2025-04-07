@@ -1,5 +1,5 @@
 // models/Test.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
   questionText: {
@@ -61,7 +61,9 @@ const testResultSchema = new mongoose.Schema({
 });
 
 
-export const Test = mongoose.model('Test', testSchema);
-export const TestResult = mongoose.model('TestResult', testResultSchema);
-export const Question = mongoose.model('Question', questionSchema);
+module.exports = {
+  Test: mongoose.model('Test', testSchema),
+  TestResult: mongoose.model('TestResult', testResultSchema),
+  Question: mongoose.model('Question', questionSchema)
+};
 
