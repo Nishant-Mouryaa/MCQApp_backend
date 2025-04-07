@@ -61,6 +61,8 @@ const testResultSchema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Test', testSchema);
-module.exports = mongoose.model('TestResult', testResultSchema);
-module.exports = mongoose.model('Question', questionSchema);
+const Test = mongoose.model('Test', testSchema);
+const TestResult = mongoose.model('TestResult', testResultSchema);
+const Question = mongoose.model('Question', questionSchema);
+
+module.exports = { Test, TestResult, Question };
